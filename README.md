@@ -13,7 +13,7 @@ Sistema de gestão financeira multi-tenant desenvolvido em Laravel.
 
 ## 🛠️ Tecnologias
 
-- Laravel 10 + PHP 8.2
+- Laravel 11 + PHP 8.2
 - MySQL 8.0
 - Tailwind CSS + Alpine.js
 - Chart.js
