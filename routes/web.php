@@ -8,6 +8,7 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\TenantController;
+use App\Http\Controllers\Admin\UserController;
 use App\Models\User;
 
 Route::get('/', function () {
@@ -68,6 +69,17 @@ Route::middleware(['auth', 'verified', 'super_admin'])
             ->name('tenants.suspend');
         Route::post('tenants/{tenant}/activate', [TenantController::class, 'activate'])
             ->name('tenants.activate');
+});
+
+Route::middleware(['auth', 'verified', 'super_admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        // ... rotas de tenants existentes
+        
+        // Rotas de Usuários
+        Route::resource('users', UserController::class)->except(['show', 'create', 'edit']);
+        Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 });
 
 require __DIR__ . '/auth.php';
