@@ -77,7 +77,7 @@ class TenantController extends Controller
 
         return redirect()
             ->route('admin.tenants.index')
-            ->with('success', 'Tenant criado com sucesso!');
+            ->with('success', 'Empresa criada com sucesso!');
     }
 
     /**
@@ -119,7 +119,7 @@ class TenantController extends Controller
 
         return redirect()
             ->route('admin.tenants.index')
-            ->with('success', 'Tenant atualizado com sucesso!');
+            ->with('success', 'Empresa atualizada com sucesso!');
     }
 
     /**
@@ -129,11 +129,33 @@ class TenantController extends Controller
     {
         $this->authorize('delete', $tenant);
 
+        $tenantName = $tenant->name;
+        
+        // Contar antes de excluir
+        $stats = [
+            'users' => $tenant->users()->count(),
+            'expenses' => $tenant->expenses()->count(),
+            'categories' => $tenant->categories()->count(),
+            'payment_methods' => $tenant->paymentMethods()->count(),
+        ];
+
+        // Pegar IDs dos usuários
+        $userIds = $tenant->users()->pluck('id')->toArray();
+        
+        // Excluir TUDO em cascata
+        if (!empty($userIds)) {
+            \App\Models\Expense::whereIn('user_id', $userIds)->delete();
+            \App\Models\Category::whereIn('user_id', $userIds)->delete();
+            \App\Models\PaymentMethod::whereIn('user_id', $userIds)->delete();
+        }
+        
+        // Excluir usuários e tenant
+        $tenant->users()->delete();
         $tenant->delete();
 
         return redirect()
             ->route('admin.tenants.index')
-            ->with('success', 'Tenant excluído com sucesso!');
+            ->with('success', "Empresa '{$tenantName}' excluído! Removidos: {$stats['users']} usuários, {$stats['expenses']} despesas, {$stats['categories']} categorias, {$stats['payment_methods']} métodos.");
     }
 
     /**
@@ -143,9 +165,13 @@ class TenantController extends Controller
     {
         $this->authorize('suspend', $tenant);
 
+        // Suspender o tenant
         $tenant->update(['status' => 'suspended']);
 
-        return back()->with('success', 'Tenant suspendido com sucesso!');
+        // Suspender TODOS os usuários do tenant
+        $tenant->users()->update(['is_active' => false]);
+
+        return back()->with('success', 'Empresa e todos os ' . $tenant->users()->count() . ' usuários foram suspensos!');
     }
 
     /**
@@ -155,8 +181,12 @@ class TenantController extends Controller
     {
         $this->authorize('activate', $tenant);
 
+        // Ativar o tenant
         $tenant->update(['status' => 'active']);
 
-        return back()->with('success', 'Tenant ativado com sucesso!');
+        // Reativar TODOS os usuários do tenant
+        $tenant->users()->update(['is_active' => true]);
+
+        return back()->with('success', 'Empresa e todos os ' . $tenant->users()->count() . ' usuários foram reativados!');
     }
 }
