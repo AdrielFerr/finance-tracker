@@ -8,16 +8,18 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-2xl font-bold text-gray-900">Gerenciar Tenants</h2>
+            <h2 class="text-2xl font-bold text-gray-900">Gerenciar Empresas</h2>
             <p class="mt-1 text-sm text-gray-500">Gerencie todas as empresas cadastradas no sistema</p>
         </div>
-        <a href="{{ route('admin.tenants.create') }}" 
-           class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+        
+        <!-- Botão que dispara o modal -->
+        <button @click="$dispatch('open-tenant-modal')"
+                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
-            Novo Tenant
-        </a>
+            Nova Empresa
+        </button>
     </div>
 
     <!-- Tabela de Tenants -->
@@ -82,12 +84,23 @@
                                     </svg>
                                 </a>
 
-                                <a href="{{ route('admin.tenants.edit', $tenant) }}" 
-                                   class="text-indigo-600 hover:text-indigo-900" title="Editar">
+                                <button @click="$dispatch('open-edit-modal', {
+                                            id: {{ $tenant->id }},
+                                            name: '{{ addslashes($tenant->name) }}',
+                                            email: '{{ $tenant->email }}',
+                                            phone: '{{ $tenant->phone }}',
+                                            address: '{{ addslashes($tenant->address ?? '') }}',
+                                            plan: '{{ $tenant->plan }}',
+                                            status: '{{ $tenant->status }}',
+                                            max_users: {{ $tenant->max_users }},
+                                            max_expenses: {{ $tenant->max_expenses }}
+                                        })"
+                                        class="text-indigo-600 hover:text-indigo-900" 
+                                        title="Editar">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                     </svg>
-                                </a>
+                                </button>
 
                                 @if($tenant->status == 'active')
                                     <form method="POST" action="{{ route('admin.tenants.suspend', $tenant) }}" class="inline">
@@ -136,9 +149,10 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
                             <p class="mt-2">Nenhum tenant cadastrado</p>
-                            <a href="{{ route('admin.tenants.create') }}" class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-500">
+                            <button @click="$dispatch('open-tenant-modal')" 
+                                    class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-500">
                                 Criar primeiro tenant
-                            </a>
+                            </button>
                         </td>
                     </tr>
                 @endforelse
@@ -153,4 +167,8 @@
         </div>
     @endif
 </div>
+
+<!-- Include dos Modals -->
+@include('admin.tenants.partials.create-modal')
+@include('admin.tenants.partials.edit-modal')
 @endsection
