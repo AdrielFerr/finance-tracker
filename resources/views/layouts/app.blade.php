@@ -4,7 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'FinanceTracker') - Gerenciamento Financeiro</title>
+    <title>@yield('title', setting('app_name', 'FinanceTracker'))</title>
+
+    <!-- Favicon Dinâmico -->
+    @php
+        $faviconPath = setting('favicon_path');
+    @endphp
+    
+    @if($faviconPath && \Storage::disk('public')->exists($faviconPath))
+        <!-- Favicon customizado -->
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $faviconPath) }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ asset('storage/' . $faviconPath) }}">
+    @else
+        <!-- Favicon padrão SVG -->
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%234F46E5'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.35em' font-size='50' fill='white' font-family='Arial, sans-serif' font-weight='bold'%3E$%3C/text%3E%3C/svg%3E">
+    @endif
 
     <!-- Tailwind CSS -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

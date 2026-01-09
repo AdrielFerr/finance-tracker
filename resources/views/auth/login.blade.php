@@ -1,220 +1,146 @@
+@php
+use Illuminate\Support\Facades\Storage;
+$logoPath = setting('logo_path');
+$appName = setting('app_name', 'FinanceTracker');
+// Cor roxa original do seu sistema
+$primaryColor = setting('primary_color', '#4F46E5'); 
+$logoDisplayMode = setting('logo_display_mode', 'logo_only');
+@endphp
+
 <!DOCTYPE html>
 <html lang="pt-BR" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login - FinanceTracker</title>
+    <title>Login - {{ $appName }}</title>
+
+    @php $faviconPath = setting('favicon_path'); @endphp
+    @if($faviconPath && Storage::disk('public')->exists($faviconPath))
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $faviconPath) }}">
+    @else
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='{{ urlencode($primaryColor) }}'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.35em' font-size='50' fill='white' font-family='Arial, sans-serif' font-weight='bold'%3E$%3C/text%3E%3C/svg%3E">
+    @endif
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full">
-    <div class="min-h-full flex">
-        <!-- Lado Esquerdo - Ilustração e Texto -->
-        <div class="hidden lg:flex lg:flex-1 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 relative overflow-hidden">
-            <!-- Formas de fundo animadas -->
-            <div class="absolute inset-0 opacity-20">
-                <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-                <div class="absolute top-0 -right-4 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-                <div class="absolute -bottom-8 left-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
+
+<body class="h-full flex items-center justify-center bg-cover" 
+      style="background: linear-gradient(135deg, {{ $primaryColor }} 0%, {{ $primaryColor }}dd 100%);">
+
+    <div class="w-full max-w-6xl p-4 sm:p-8 flex flex-col lg:flex-row items-center justify-between gap-12">
+
+        <div class="flex-1 text-center lg:text-left text-white space-y-6">
+            
+            @if($logoDisplayMode === 'logo_and_name' || !$logoPath)
+                <h1 class="text-4xl lg:text-5xl font-bold mb-4 drop-shadow-md">Bem-vindo ao {{ $appName }}</h1>
+                <p class="text-xl opacity-90 font-light">Controle suas finanças de forma simples e inteligente</p>
+            @else
+                {{-- <div class="mb-8 flex justify-center lg:justify-start">
+                    @if($logoPath && Storage::disk('public')->exists($logoPath))
+                         <div class="bg-white/10 backdrop-blur-md rounded-2xl p-3 inline-block border border-white/20">
+                             <img src="{{ asset('storage/' . $logoPath) }}" alt="{{ $appName }}" class="h-16 object-contain">
+                         </div>
+                    @else
+                         <svg class="h-20 w-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    @endif
+                </div> --}}
+                <h1 class="text-4xl font-bold mb-2">Bem-vindo!</h1>
+                <p class="text-lg opacity-80">Acesse sua conta para continuar gerenciando seus ativos.</p>
+            @endif
+
+            <div class="relative w-full max-w-md mx-auto lg:mx-0 my-8 hover:scale-105 transition-transform duration-500">
+                <img src="{{ asset('finance-app-animate1.svg') }}" 
+                     alt="Ilustração Financeira" 
+                     class="w-full h-auto drop-shadow-2xl">
             </div>
 
-            <!-- Conteúdo CENTRALIZADO -->
-            <div class="relative w-full flex flex-col justify-center items-center text-white text-center px-8">
-                <!-- Título -->
-                <div class="mb-8">
-                    <h1 class="text-5xl font-bold mb-4">
-                        Bem-vindo ao<br>
-                        <span class="text-purple-200">FinanceTracker</span>
-                    </h1>
-                    <p class="text-xl text-purple-100">
-                        Controle suas finanças de forma<br>
-                        simples e inteligente
-                    </p>
-                </div>
-
-                <!-- Ilustração SVG CENTRALIZADA -->
-                <div class="my-12">
-                    <svg class="w-80 h-80" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Gráfico de Pizza Central -->
-                        <circle cx="200" cy="200" r="85" fill="#A78BFA" opacity="0.2"/>
-                        <path d="M200 115 L200 200 L285 200 A85 85 0 0 0 200 115 Z" fill="#8B5CF6"/>
-                        <path d="M200 200 L285 200 A85 85 0 0 1 200 285 Z" fill="#6366F1"/>
-                        <path d="M200 200 L200 285 A85 85 0 0 1 115 200 Z" fill="#4F46E5"/>
-                        <path d="M200 200 L115 200 A85 85 0 0 1 200 115 Z" fill="#7C3AED"/>
-                        
-                        <!-- Moedas ao redor -->
-                        <circle cx="320" cy="100" r="32" fill="#FCD34D" stroke="#F59E0B" stroke-width="3"/>
-                        <text x="320" y="110" text-anchor="middle" fill="#92400E" font-size="26" font-weight="bold">$</text>
-                        
-                        <circle cx="360" cy="200" r="26" fill="#FCD34D" stroke="#F59E0B" stroke-width="3"/>
-                        <text x="360" y="208" text-anchor="middle" fill="#92400E" font-size="20" font-weight="bold">$</text>
-                        
-                        <circle cx="320" cy="300" r="20" fill="#FCD34D" stroke="#F59E0B" stroke-width="2"/>
-                        <text x="320" y="306" text-anchor="middle" fill="#92400E" font-size="16" font-weight="bold">$</text>
-                        
-                        <circle cx="80" cy="100" r="28" fill="#FCD34D" stroke="#F59E0B" stroke-width="3"/>
-                        <text x="80" y="108" text-anchor="middle" fill="#92400E" font-size="22" font-weight="bold">$</text>
-                        
-                        <circle cx="40" cy="200" r="24" fill="#FCD34D" stroke="#F59E0B" stroke-width="2"/>
-                        <text x="40" y="207" text-anchor="middle" fill="#92400E" font-size="18" font-weight="bold">$</text>
-                        
-                        <circle cx="80" cy="300" r="22" fill="#FCD34D" stroke="#F59E0B" stroke-width="2"/>
-                        <text x="80" y="307" text-anchor="middle" fill="#92400E" font-size="17" font-weight="bold">$</text>
-                        
-                        <!-- Gráfico de Barras embaixo -->
-                        <rect x="140" y="350" width="25" height="40" rx="4" fill="#10B981"/>
-                        <rect x="175" y="335" width="25" height="55" rx="4" fill="#34D399"/>
-                        <rect x="210" y="320" width="25" height="70" rx="4" fill="#10B981"/>
-                        <rect x="245" y="340" width="25" height="50" rx="4" fill="#34D399"/>
-                    </svg>
-                </div>
-
-                <!-- Features -->
-                <div class="mt-8 space-y-3">
-                    <div class="flex items-center justify-center space-x-3">
-                        <svg class="w-6 h-6 text-green-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="text-purple-100 text-lg">Controle total de despesas</span>
+            <div class="hidden lg:flex flex-col space-y-3 pt-2 pl-2">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-green-400/20 p-1 rounded-full">
+                        <svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                     </div>
-                    <div class="flex items-center justify-center space-x-3">
-                        <svg class="w-6 h-6 text-green-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="text-purple-100 text-lg">Relatórios detalhados</span>
+                    <span class="opacity-90 text-lg font-medium">Controle total de despesas</span>
+                    <div class="bg-green-400/20 p-1 rounded-full">
+                        <svg class="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                     </div>
-                    <div class="flex items-center justify-center space-x-3">
-                        <svg class="w-6 h-6 text-green-300" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="text-purple-100 text-lg">Interface intuitiva</span>
-                    </div>
+                    <span class="opacity-90 text-lg font-medium">Relatórios detalhados</span>
                 </div>
             </div>
         </div>
 
-        <!-- Lado Direito - Form de Login -->
-        <div class="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 xl:px-24 bg-white">
-            <div class="mx-auto w-full max-w-sm lg:w-96">
-                <!-- Logo e Título -->
-                <div class="text-center mb-8">
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 mb-4">
-                        <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+        <div class="w-full max-w-md bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] p-8 sm:p-12 relative z-10 animate-fade-in-up">
+            
+            <div class="text-center mb-8">
+                @if($logoPath && Storage::disk('public')->exists($logoPath))
+                    <img src="{{ asset('storage/' . $logoPath) }}" alt="{{ $appName }}" class="h-12 mx-auto mb-4 object-contain">
+                @endif
+                
+                <h3 class="text-2xl font-bold text-gray-800">Faça Login</h3>
+                <p class="text-gray-500 mt-2 text-sm">Preencha seus dados para entrar</p>
+            </div>
+
+            <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                @csrf
+
+                <div>
+                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-1 ml-1">E-mail</label>
+                    <div class="relative group">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 group-focus-within:text-[{{ $primaryColor }}] transition-colors">
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg>
+                        </div>
+                        <input id="email" name="email" type="email" required value="{{ old('email') }}"
+                               class="block w-full rounded-xl border-0 py-3.5 pl-11 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6 bg-gray-50 hover:bg-white transition-all"
+                               style="--tw-ring-color: {{ $primaryColor }}; focus:--tw-ring-color: {{ $primaryColor }};"
+                               placeholder="seu@email.com">
                     </div>
-                    <h2 class="text-3xl font-bold tracking-tight text-gray-900">
-                        Faça login
-                    </h2>
-                    <p class="mt-2 text-sm text-gray-600">
-                        Acesse sua conta e gerencie suas finanças
-                    </p>
+                    @error('email') <p class="mt-1 text-xs text-red-600 ml-1 font-medium">{{ $message }}</p> @enderror
                 </div>
 
-                <!-- Form -->
-                <div class="mt-8">
-                    <form method="POST" action="{{ route('login') }}" class="space-y-6">
-                        @csrf
-
-                        <!-- Email -->
-                        <div>
-                            <label for="email" class="block text-sm font-medium leading-6 text-gray-900">
-                                E-mail
-                            </label>
-                            <div class="mt-2">
-                                <input id="email" 
-                                       name="email" 
-                                       type="email" 
-                                       autocomplete="email" 
-                                       required 
-                                       value="{{ old('email') }}"
-                                       class="block w-full rounded-lg border-0 px-4 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 @error('email') ring-red-500 @enderror"
-                                       placeholder="seu@email.com">
-                            </div>
-                            @error('email')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                <div>
+                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-1 ml-1">Senha</label>
+                    <div class="relative group">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 group-focus-within:text-[{{ $primaryColor }}] transition-colors">
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 4.5H7V9h6V5.5z" clip-rule="evenodd" /></svg>
                         </div>
+                        <input id="password" name="password" type="password" required
+                               class="block w-full rounded-xl border-0 py-3.5 pl-11 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6 bg-gray-50 hover:bg-white transition-all"
+                               style="--tw-ring-color: {{ $primaryColor }}; focus:--tw-ring-color: {{ $primaryColor }};"
+                               placeholder="••••••••">
+                    </div>
+                    @error('password') <p class="mt-1 text-xs text-red-600 ml-1 font-medium">{{ $message }}</p> @enderror
+                </div>
 
-                        <!-- Password -->
-                        <div>
-                            <label for="password" class="block text-sm font-medium leading-6 text-gray-900">
-                                Senha
-                            </label>
-                            <div class="mt-2">
-                                <input id="password" 
-                                       name="password" 
-                                       type="password" 
-                                       autocomplete="current-password" 
-                                       required
-                                       class="block w-full rounded-lg border-0 px-4 py-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 @error('password') ring-red-500 @enderror"
-                                       placeholder="••••••••">
-                            </div>
-                            @error('password')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Remember me e Esqueceu senha -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <input id="remember_me" 
-                                       name="remember" 
-                                       type="checkbox" 
-                                       class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600">
-                                <label for="remember_me" class="ml-3 block text-sm leading-6 text-gray-700">
-                                    Lembrar de mim
-                                </label>
-                            </div>
-
-                            @if (Route::has('password.request'))
-                                <div class="text-sm leading-6">
-                                    <a href="{{ route('password.request') }}" class="font-semibold text-indigo-600 hover:text-indigo-500">
-                                        Esqueceu a senha?
-                                    </a>
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- Botão de Login -->
-                        <div>
-                            <button type="submit" 
-                                    class="flex w-full justify-center rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all">
-                                Entrar
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- Registro -->
-                    @if (Route::has('register'))
-                        <p class="mt-10 text-center text-sm text-gray-500">
-                            Não tem uma conta?
-                            <a href="{{ route('register') }}" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
-                                Criar conta gratuita
-                            </a>
-                        </p>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember_me" name="remember" type="checkbox"
+                               class="h-4 w-4 rounded border-gray-300 cursor-pointer"
+                               style="color: {{ $primaryColor }};">
+                        <label for="remember_me" class="ml-2 block text-sm text-gray-600 cursor-pointer select-none">Lembrar</label>
+                    </div>
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" class="text-sm font-semibold hover:opacity-80 transition-opacity" style="color: {{ $primaryColor }};">
+                            Esqueceu a senha?
+                        </a>
                     @endif
                 </div>
+
+                <button type="submit"
+                        class="flex w-full justify-center rounded-xl px-4 py-4 text-sm font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                        style="background-color: {{ $primaryColor }};">
+                    ENTRAR
+                </button>
+            </form>
+
+            <div class="mt-8 text-center border-t border-gray-100 pt-6">
+                <p class="text-sm text-gray-500">
+                    Ainda não possui conta?
+                    <a href="{{ route('register') }}" class="font-bold hover:underline ml-1" style="color: {{ $primaryColor }};">
+                        Criar agora
+                    </a>
+                </p>
             </div>
         </div>
     </div>
-
-    <style>
-        @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
-        }
-        .animate-blob {
-            animation: blob 7s infinite;
-        }
-        .animation-delay-2000 {
-            animation-delay: 2s;
-        }
-        .animation-delay-4000 {
-            animation-delay: 4s;
-        }
-    </style>
 </body>
 </html>
