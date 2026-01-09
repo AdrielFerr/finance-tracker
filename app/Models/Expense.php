@@ -57,29 +57,17 @@ class Expense extends Model
 
     /**
      * Boot method para eventos do modelo
+     * 
+     * ✅ CORRIGIDO - Removida lógica automática de mudança de status
      */
     protected static function boot()
     {
         parent::boot();
 
-        // Atualizar status automaticamente ao definir payment_date
-        static::saving(function ($expense) {
-            if ($expense->payment_date && $expense->status === 'pending') {
-                $expense->status = 'paid';
-            }
-
-            // Verificar se está vencida
-            if (!$expense->payment_date && 
-                $expense->due_date < Carbon::today() && 
-                $expense->status === 'pending') {
-                $expense->status = 'overdue';
-            }
-        });
-
         // Deletar arquivo ao remover despesa
         static::deleting(function ($expense) {
             if ($expense->receipt_path) {
-                Storage::delete($expense->receipt_path);
+                Storage::disk('public')->delete($expense->receipt_path);
             }
         });
     }
