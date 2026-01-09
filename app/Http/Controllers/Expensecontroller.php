@@ -18,6 +18,7 @@ use Carbon\Carbon;
 class ExpenseController extends Controller
 {
     use AuthorizesRequests;
+    
     public function __construct(
         private ExpenseService $expenseService,
         private ExpenseRepository $expenseRepository
@@ -240,18 +241,27 @@ class ExpenseController extends Controller
      */
     public function downloadReceipt(Expense $expense)
     {
-        // Verificar propriedade
         $this->authorize('view', $expense);
 
+        // dd("teste");
+
         if (!$expense->receipt_path) {
-            return back()->with('error', 'Esta despesa não possui comprovante.');
+            return back()->with('error', 'Despesa sem comprovante.');
         }
 
-        if (!Storage::exists($expense->receipt_path)) {
-            return back()->with('error', 'Arquivo de comprovante não encontrado.');
+        if (!Storage::disk('public')->exists($expense->receipt_path)) {
+            return back()->with('error', 'Arquivo não encontrado.');
         }
 
-        return Storage::download($expense->receipt_path);
+        // Caminho completo
+        $fullPath = Storage::disk('public')->path($expense->receipt_path);
+
+        // Nome amigável
+        $extension = pathinfo($expense->receipt_path, PATHINFO_EXTENSION);
+        $fileName = 'comprovante-' . $expense->id . '-' . now()->format('Y-m-d') . '.' . $extension;
+
+        // SEM AVISO DO INTELLISENSE
+        return response()->download($fullPath, $fileName);
     }
 
     /**
