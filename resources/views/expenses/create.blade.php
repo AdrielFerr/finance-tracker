@@ -161,26 +161,66 @@
                     @enderror
                 </div>
 
-                <!-- Upload de Comprovante -->
-                <div>
-                    <label for="receipt" class="block text-sm font-medium text-gray-700">Comprovante</label>
-                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                        <div class="space-y-1 text-center">
+                <!-- Upload de Comprovante - CORRIGIDO COM FEEDBACK -->
+                <div x-data="fileUpload()">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Comprovante</label>
+                    
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md transition-all"
+                         :class="isDragging ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 hover:border-indigo-400'"
+                         @dragover.prevent="isDragging = true"
+                         @dragleave.prevent="isDragging = false"
+                         @drop.prevent="handleDrop($event)">
+                        
+                        <div class="space-y-2 text-center w-full">
+                            <!-- Ícone -->
                             <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
+                                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            <div class="flex text-sm text-gray-600">
-                                <label for="receipt" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
+                            
+                            <!-- Texto -->
+                            <div class="flex justify-center text-sm text-gray-600">
+                                <label for="receipt" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 px-2">
                                     <span>Upload de arquivo</span>
-                                    <input type="file" name="receipt" id="receipt" class="sr-only" accept=".pdf,.jpg,.jpeg,.png">
+                                    <input type="file" 
+                                           name="receipt" 
+                                           id="receipt" 
+                                           x-ref="fileInput"
+                                           class="sr-only" 
+                                           accept=".pdf,.jpg,.jpeg,.png,.gif"
+                                           @change="handleFileSelect($event)">
                                 </label>
                                 <p class="pl-1">ou arraste aqui</p>
                             </div>
+                            
                             <p class="text-xs text-gray-500">PDF, PNG, JPG até 5MB</p>
+                            
+                            <!-- Arquivo selecionado -->
+                            <div x-show="fileName" x-cloak class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div class="text-left">
+                                            <p class="text-sm font-medium text-green-900" x-text="fileName"></p>
+                                            <p class="text-xs text-green-600" x-text="fileSize"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" 
+                                            @click="removeFile()"
+                                            class="text-green-600 hover:text-green-800 p-1">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    
                     @error('receipt')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
@@ -218,6 +258,45 @@ function expenseForm() {
             let value = parseFloat(this.amount.replace(',', '.'));
             let installment = value / this.totalInstallments;
             return 'R$ ' + installment.toFixed(2).replace('.', ',');
+        }
+    }
+}
+
+function fileUpload() {
+    return {
+        fileName: '',
+        fileSize: '',
+        isDragging: false,
+        
+        handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                this.updateFileInfo(file);
+            }
+        },
+        
+        handleDrop(event) {
+            this.isDragging = false;
+            const file = event.dataTransfer.files[0];
+            if (file) {
+                this.$refs.fileInput.files = event.dataTransfer.files;
+                this.updateFileInfo(file);
+            }
+        },
+        
+        updateFileInfo(file) {
+            this.fileName = file.name;
+            const sizeKB = (file.size / 1024).toFixed(2);
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            this.fileSize = file.size < 1024 * 1024 
+                ? `${sizeKB} KB` 
+                : `${sizeMB} MB`;
+        },
+        
+        removeFile() {
+            this.fileName = '';
+            this.fileSize = '';
+            this.$refs.fileInput.value = '';
         }
     }
 }
