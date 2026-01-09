@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\ExpenseRepository;
+use App\Models\Expense; // ✅ ADICIONAR ESTA LINHA
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use PDF; // Caso instale barryvdh/laravel-dompdf
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
@@ -156,59 +157,143 @@ class ReportController extends Controller
 
     /**
      * Exportar relatório em PDF
+     * ✅ MODIFICADO - Agora aceita intervalo de datas
      */
     public function exportPdf(Request $request)
     {
         $user = Auth::user();
-        $type = $request->input('type', 'monthly');
         
-        $year = $request->input('year', Carbon::now()->year);
-        $month = $request->input('month', Carbon::now()->month);
+        // ✅ Aceita intervalo de datas
+        $startMonth = $request->input('start_month', Carbon::now()->month);
+        $startYear = $request->input('start_year', Carbon::now()->year);
+        $endMonth = $request->input('end_month', Carbon::now()->month);
+        $endYear = $request->input('end_year', Carbon::now()->year);
         
-        $startDate = Carbon::create($year, $month, 1)->startOfMonth();
-        $endDate = Carbon::create($year, $month, 1)->endOfMonth();
+        // Criar datas de início e fim
+        $startDate = Carbon::create($startYear, $startMonth, 1)->startOfMonth();
+        $endDate = Carbon::create($endYear, $endMonth, 1)->endOfMonth();
+
+        // Buscar despesas do período
+        $expenses = Expense::with(['category', 'paymentMethod'])
+            ->where('user_id', $user->id)
+            ->whereBetween('competence_date', [$startDate, $endDate])
+            ->orderBy('due_date')
+            ->get();
+
+        // Calcular totais
+        $totalAmount = $expenses->sum('amount');
+        $paidAmount = $expenses->where('status', 'paid')->sum('amount');
+        $pendingAmount = $expenses->where('status', 'pending')->sum('amount');
+
+        // Agrupar por categoria
+        $expensesByCategory = Expense::selectRaw('category_id, SUM(amount) as total')
+            ->with('category')
+            ->where('user_id', $user->id)
+            ->whereBetween('competence_date', [$startDate, $endDate])
+            ->where('status', '!=', 'canceled')
+            ->groupBy('category_id')
+            ->orderByDesc('total')
+            ->get();
+
+        // Formatar período
+        $monthNames = [
+            1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março',
+            4 => 'Abril', 5 => 'Maio', 6 => 'Junho',
+            7 => 'Julho', 8 => 'Agosto', 9 => 'Setembro',
+            10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro'
+        ];
+
+        $startMonthName = $monthNames[$startMonth];
+        $endMonthName = $monthNames[$endMonth];
+
+        // Título do período
+        if ($startMonth == $endMonth && $startYear == $endYear) {
+            // Mesmo mês
+            $periodTitle = "{$startMonthName} de {$startYear}";
+            $periodSubtitle = "Relatório Mensal de Despesas";
+        } else {
+            // Intervalo
+            $periodTitle = "{$startMonthName}/{$startYear} até {$endMonthName}/{$endYear}";
+            $periodSubtitle = "Relatório do Período";
+        }
 
         $data = [
             'user' => $user,
-            'year' => $year,
-            'month' => $month,
-            'expenses' => $this->expenseRepository->getMonthlyExpenses($user, $year, $month),
-            'stats' => [
-                'total' => $this->expenseRepository->getTotalByPeriod($user, $startDate, $endDate),
-                'paid' => $this->expenseRepository->getTotalByPeriod($user, $startDate, $endDate, 'paid'),
-                'pending' => $this->expenseRepository->getTotalByPeriod($user, $startDate, $endDate, 'pending'),
-            ],
-            'by_category' => $this->expenseRepository->getTotalByCategory($user, $startDate, $endDate),
+            'expenses' => $expenses,
+            'totalAmount' => $totalAmount,
+            'paidAmount' => $paidAmount,
+            'pendingAmount' => $pendingAmount,
+            'expensesByCategory' => $expensesByCategory,
+            'periodTitle' => $periodTitle,
+            'periodSubtitle' => $periodSubtitle,
+            // Compatibilidade com view antiga
+            'monthName' => $periodTitle,
+            'year' => $startYear,
+            'month' => $startMonth,
         ];
 
-        // Se você instalou o dompdf:
-        // $pdf = PDF::loadView('reports.pdf.monthly', $data);
-        // return $pdf->download("relatorio-{$year}-{$month}.pdf");
+        // Gerar PDF
+        $pdf = Pdf::loadView('reports.pdf.monthly', $data);
+        
+        // Nome do arquivo
+        if ($startMonth == $endMonth && $startYear == $endYear) {
+            $fileName = "relatorio-{$startMonthName}-{$startYear}.pdf";
+        } else {
+            $fileName = "relatorio-{$startMonthName}-{$startYear}-ate-{$endMonthName}-{$endYear}.pdf";
+        }
 
-        // Por enquanto, retornar view
-        return view('reports.pdf.monthly', $data);
+        return $pdf->download($fileName);
     }
 
     /**
      * Exportar para Excel/CSV
+     * ✅ MODIFICADO - Agora aceita intervalo de datas
      */
     public function exportExcel(Request $request)
     {
         $user = Auth::user();
         
-        $year = $request->input('year', Carbon::now()->year);
-        $month = $request->input('month', Carbon::now()->month);
+        // ✅ Aceita intervalo de datas
+        $startMonth = $request->input('start_month', Carbon::now()->month);
+        $startYear = $request->input('start_year', Carbon::now()->year);
+        $endMonth = $request->input('end_month', Carbon::now()->month);
+        $endYear = $request->input('end_year', Carbon::now()->year);
         
-        $expenses = $this->expenseRepository->getMonthlyExpenses($user, $year, $month);
+        // Criar datas de início e fim
+        $startDate = Carbon::create($startYear, $startMonth, 1)->startOfMonth();
+        $endDate = Carbon::create($endYear, $endMonth, 1)->endOfMonth();
 
-        // Gerar CSV
-        $filename = "despesas-{$year}-{$month}.csv";
+        // Buscar despesas do período
+        $expenses = Expense::with(['category', 'paymentMethod'])
+            ->where('user_id', $user->id)
+            ->whereBetween('competence_date', [$startDate, $endDate])
+            ->orderBy('due_date')
+            ->get();
+
+        // Nome do mês em português
+        $monthNames = [
+            1 => 'janeiro', 2 => 'fevereiro', 3 => 'marco',
+            4 => 'abril', 5 => 'maio', 6 => 'junho',
+            7 => 'julho', 8 => 'agosto', 9 => 'setembro',
+            10 => 'outubro', 11 => 'novembro', 12 => 'dezembro'
+        ];
+
+        $startMonthName = $monthNames[$startMonth];
+        $endMonthName = $monthNames[$endMonth];
+
+        // Nome do arquivo
+        if ($startMonth == $endMonth && $startYear == $endYear) {
+            $filename = "despesas-{$startMonthName}-{$startYear}.csv";
+        } else {
+            $filename = "despesas-{$startMonthName}-{$startYear}-ate-{$endMonthName}-{$endYear}.csv";
+        }
+        
         $headers = [
             'Content-Type' => 'text/csv; charset=utf-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
-        $callback = function() use ($expenses) {
+        $callback = function() use ($expenses, $monthNames) {
             $file = fopen('php://output', 'w');
             
             // BOM para UTF-8
@@ -216,6 +301,7 @@ class ReportController extends Controller
             
             // Cabeçalho
             fputcsv($file, [
+                'Mês/Ano',
                 'Data Vencimento',
                 'Descrição',
                 'Categoria',
@@ -225,18 +311,76 @@ class ReportController extends Controller
                 'Data Pagamento'
             ], ';');
 
-            // Dados
-            foreach ($expenses as $expense) {
+            // Agrupar despesas por mês
+            $expensesByMonth = $expenses->groupBy(function($expense) {
+                return $expense->due_date->format('Y-m');
+            })->sortKeys();
+
+            // Dados agrupados por mês
+            foreach ($expensesByMonth as $yearMonth => $monthExpenses) {
+                $monthYear = \Carbon\Carbon::parse($yearMonth . '-01')->format('m/Y');
+                $monthTotal = $monthExpenses->sum('amount');
+                
+                // Linha de cabeçalho do mês (em destaque)
                 fputcsv($file, [
-                    $expense->due_date->format('d/m/Y'),
-                    $expense->description,
-                    $expense->category->name,
-                    number_format($expense->amount, 2, ',', '.'),
-                    $expense->status_text,
-                    $expense->paymentMethod?->name ?? '-',
-                    $expense->payment_date ? $expense->payment_date->format('d/m/Y') : '-',
+                    '',
+                    '',
+                    ">>> {$monthNames[\Carbon\Carbon::parse($yearMonth . '-01')->format('n')]}/{$yearMonth}",
+                    '',
+                    '',
+                    '',
+                    '',
+                    ''
                 ], ';');
+                
+                // Despesas do mês
+                foreach ($monthExpenses as $expense) {
+                    fputcsv($file, [
+                        $monthYear,
+                        $expense->due_date->format('d/m/Y'),
+                        $expense->description,
+                        $expense->category->name,
+                        number_format($expense->amount, 2, ',', '.'),
+                        match($expense->status) {
+                            'paid' => 'Pago',
+                            'pending' => 'Pendente',
+                            'overdue' => 'Vencido',
+                            'canceled' => 'Cancelado',
+                            default => $expense->status
+                        },
+                        $expense->paymentMethod?->name ?? '-',
+                        $expense->payment_date ? $expense->payment_date->format('d/m/Y') : '-',
+                    ], ';');
+                }
+                
+                // Linha de subtotal do mês
+                fputcsv($file, [
+                    '',
+                    '',
+                    'SUBTOTAL ' . $monthNames[\Carbon\Carbon::parse($yearMonth . '-01')->format('n')],
+                    '',
+                    number_format($monthTotal, 2, ',', '.'),
+                    '',
+                    '',
+                    ''
+                ], ';');
+                
+                // Linha em branco para separar meses
+                fputcsv($file, ['', '', '', '', '', '', '', ''], ';');
             }
+            
+            // Total geral
+            $totalGeral = $expenses->sum('amount');
+            fputcsv($file, [
+                '',
+                '',
+                'TOTAL GERAL',
+                '',
+                number_format($totalGeral, 2, ',', '.'),
+                '',
+                '',
+                ''
+            ], ';');
 
             fclose($file);
         };

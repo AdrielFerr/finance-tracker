@@ -71,63 +71,77 @@
         </a>
     </div>
 
-    <!-- Exportação -->
+    <!-- Exportação Simplificada -->
     <div class="bg-white rounded-lg shadow-sm p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Exportar Dados</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <!-- Exportar Excel -->
-            <form action="{{ route('reports.export-excel') }}" method="GET" class="space-y-3">
+        <p class="text-sm text-gray-500 mb-4">Selecione o período e escolha o formato de exportação.</p>
+        
+        <!-- Campos de Período (compartilhados) -->
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">Selecione o Período</h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Data Início -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mês/Ano</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-2">De (Início)</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <select name="month" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <select id="start_month" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             @for($m = 1; $m <= 12; $m++)
                                 <option value="{{ $m }}" {{ $m == now()->month ? 'selected' : '' }}>
                                     {{ \Carbon\Carbon::create(null, $m)->format('F') }}
                                 </option>
                             @endfor
                         </select>
-                        <select name="year" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <select id="start_year" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             @for($y = now()->year; $y >= now()->year - 5; $y--)
                                 <option value="{{ $y }}">{{ $y }}</option>
                             @endfor
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Exportar Excel/CSV
-                </button>
-            </form>
 
-            <!-- Exportar PDF -->
-            <form action="{{ route('reports.export-pdf') }}" method="GET" class="space-y-3">
+                <!-- Data Fim -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mês/Ano</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-2">Até (Fim)</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <select name="month" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <select id="end_month" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             @for($m = 1; $m <= 12; $m++)
                                 <option value="{{ $m }}" {{ $m == now()->month ? 'selected' : '' }}>
                                     {{ \Carbon\Carbon::create(null, $m)->format('F') }}
                                 </option>
                             @endfor
                         </select>
-                        <select name="year" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <select id="end_year" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                             @for($y = now()->year; $y >= now()->year - 5; $y--)
                                 <option value="{{ $y }}">{{ $y }}</option>
                             @endfor
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                    </svg>
-                    Exportar PDF
-                </button>
-            </form>
+            </div>
+
+            <p class="text-xs text-gray-500 mt-2">
+                💡 <strong>Dica:</strong> Para exportar apenas um mês, selecione o mesmo mês/ano em ambos os campos.
+            </p>
+        </div>
+
+        <!-- Botões de Exportação -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Botão Excel -->
+            <button onclick="exportExcel()" class="inline-flex items-center justify-center px-4 py-3 bg-green-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-green-700 transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Exportar Excel
+            </button>
+
+            <!-- Botão PDF -->
+            <button onclick="exportPdf()" class="inline-flex items-center justify-center px-4 py-3 bg-red-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-red-700 transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                Exportar PDF
+            </button>
         </div>
     </div>
 
@@ -144,11 +158,31 @@
                         <li><strong>Mensal:</strong> Análise detalhada do mês com gráficos por categoria e comparativo com mês anterior</li>
                         <li><strong>Anual:</strong> Visão geral de todos os 12 meses do ano com evolução mensal</li>
                         <li><strong>Comparativo:</strong> Compare dois períodos customizados lado a lado</li>
-                        <li><strong>Exportação:</strong> Baixe seus dados em Excel/CSV ou PDF para análise externa</li>
+                        <li><strong>Exportação:</strong> Escolha o período desejado e baixe em Excel/CSV ou PDF</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function exportExcel() {
+    const startMonth = document.getElementById('start_month').value;
+    const startYear = document.getElementById('start_year').value;
+    const endMonth = document.getElementById('end_month').value;
+    const endYear = document.getElementById('end_year').value;
+    
+    window.location.href = `{{ route('reports.export-excel') }}?start_month=${startMonth}&start_year=${startYear}&end_month=${endMonth}&end_year=${endYear}`;
+}
+
+function exportPdf() {
+    const startMonth = document.getElementById('start_month').value;
+    const startYear = document.getElementById('start_year').value;
+    const endMonth = document.getElementById('end_month').value;
+    const endYear = document.getElementById('end_year').value;
+    
+    window.location.href = `{{ route('reports.export-pdf') }}?start_month=${startMonth}&start_year=${startYear}&end_month=${endMonth}&end_year=${endYear}`;
+}
+</script>
 @endsection
