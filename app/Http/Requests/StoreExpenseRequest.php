@@ -68,7 +68,8 @@ class StoreExpenseRequest extends FormRequest
             'payment_date' => [
                 'nullable',
                 'date',
-                'after_or_equal:due_date',
+                // ✅ REMOVIDO: 'after_or_equal:due_date'
+                // Pagamento pode ser antecipado, não faz sentido restringir
             ],
             'competence_date' => [
                 'nullable',
@@ -116,7 +117,7 @@ class StoreExpenseRequest extends FormRequest
             'type.in' => 'O tipo de despesa selecionado é inválido.',
             'due_date.required' => 'A data de vencimento é obrigatória.',
             'due_date.date' => 'A data de vencimento deve ser uma data válida.',
-            'payment_date.after_or_equal' => 'A data de pagamento deve ser igual ou posterior à data de vencimento.',
+            'payment_date.date' => 'A data de pagamento deve ser uma data válida.',
             'total_installments.required_if' => 'O número de parcelas é obrigatório para despesas parceladas.',
             'total_installments.min' => 'O número de parcelas deve ser no mínimo 2.',
             'total_installments.max' => 'O número de parcelas não pode ser maior que 120.',
@@ -172,6 +173,16 @@ class StoreExpenseRequest extends FormRequest
             $this->merge([
                 'competence_date' => date('Y-m-01', strtotime($this->input('due_date')))
             ]);
+        }
+
+        // ✅ ADICIONAR: Limpar payment_date se status não for 'paid'
+        if ($this->input('status') !== 'paid') {
+            $this->merge(['payment_date' => null]);
+        }
+
+        // ✅ ADICIONAR: Definir payment_date se status for 'paid' mas não foi preenchido
+        if ($this->input('status') === 'paid' && empty($this->input('payment_date'))) {
+            $this->merge(['payment_date' => now()->format('Y-m-d')]);
         }
 
         // Converter checkboxes para boolean
