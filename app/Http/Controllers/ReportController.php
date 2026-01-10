@@ -111,10 +111,18 @@ class ReportController extends Controller
         $yearStart = Carbon::create($year, 1, 1)->startOfYear();
         $yearEnd = Carbon::create($year, 12, 31)->endOfYear();
 
+        $byCategory = $this->expenseRepository->getTotalByCategory($user, $yearStart, $yearEnd);
+        
         $stats = [
             'total_year' => $this->expenseRepository->getTotalByPeriod($user, $yearStart, $yearEnd),
             'average_month' => $this->expenseRepository->getTotalByPeriod($user, $yearStart, $yearEnd) / 12,
-            'by_category' => $this->expenseRepository->getTotalByCategory($user, $yearStart, $yearEnd),
+            'by_category' => $byCategory->map(function($item) {
+                return [
+                    'category_name' => $item->category->name,
+                    'category_color' => $item->category->color ?? '#6366f1',
+                    'total' => $item->total
+                ];
+            }),
         ];
 
         return view('reports.annual', compact('year', 'monthlyData', 'stats'));
