@@ -254,13 +254,19 @@ class ExpenseRepository
      * Calcula a média de gastos por dia no período
      */
     public function getDailyAverage(
-        User $user, 
-        Carbon $startDate, 
-        Carbon $endDate
+    User $user, 
+    Carbon $startDate, 
+    Carbon $endDate
     ): float {
         $total = $this->getTotalByPeriod($user, $startDate, $endDate);
-        $days = $startDate->diffInDays($endDate) + 1;
+        $days = $startDate->daysInMonth; 
 
-        return $days > 0 ? $total / $days : 0;
+        if ($days <= 0) {
+            return 0;
+        }
+
+        $average = $total / $days;
+
+        return round($average, 2);
     }
 }
