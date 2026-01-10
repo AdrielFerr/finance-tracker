@@ -143,13 +143,23 @@ class ReportController extends Controller
 
         $period1 = [
             'total' => $this->expenseRepository->getTotalByPeriod($user, $startDate1, $endDate1),
-            'by_category' => $this->expenseRepository->getTotalByCategory($user, $startDate1, $endDate1),
+            'by_category' => $this->expenseRepository->getTotalByCategory($user, $startDate1, $endDate1)->map(function($item) {
+                return [
+                    'category_name' => $item->category->name,
+                    'total' => $item->total
+                ];
+            }),
             'top_expenses' => $this->expenseRepository->getTopExpenses($user, $startDate1, $endDate1, 5),
         ];
 
         $period2 = [
             'total' => $this->expenseRepository->getTotalByPeriod($user, $startDate2, $endDate2),
-            'by_category' => $this->expenseRepository->getTotalByCategory($user, $startDate2, $endDate2),
+            'by_category' => $this->expenseRepository->getTotalByCategory($user, $startDate2, $endDate2)->map(function($item) {
+                return [
+                    'category_name' => $item->category->name,
+                    'total' => $item->total
+                ];
+            }),
             'top_expenses' => $this->expenseRepository->getTopExpenses($user, $startDate2, $endDate2, 5),
         ];
 

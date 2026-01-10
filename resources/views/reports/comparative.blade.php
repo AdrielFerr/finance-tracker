@@ -126,37 +126,45 @@
         <!-- Top 5 Período 1 -->
         <div class="bg-white shadow rounded-lg p-6 border-t-4 border-indigo-500">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Top 5 - Período 1</h3>
-            <div class="space-y-3">
-                @foreach($period1['top_expenses'] as $expense)
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900">{{ $expense->description }}</p>
-                            <p class="text-xs text-gray-500">{{ $expense->category->name }}</p>
+            @if($period1['top_expenses']->isNotEmpty())
+                <div class="space-y-3">
+                    @foreach($period1['top_expenses'] as $expense)
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">{{ $expense->description }}</p>
+                                <p class="text-xs text-gray-500">{{ $expense->category->name }}</p>
+                            </div>
+                            <span class="text-sm font-semibold text-indigo-600">
+                                R$ {{ number_format($expense->amount, 2, ',', '.') }}
+                            </span>
                         </div>
-                        <span class="text-sm font-semibold text-indigo-600">
-                            R$ {{ number_format($expense->amount, 2, ',', '.') }}
-                        </span>
-                    </div>
-                @endforeach
-            </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-gray-500 text-center py-4">Nenhuma despesa neste período</p>
+            @endif
         </div>
 
         <!-- Top 5 Período 2 -->
         <div class="bg-white shadow rounded-lg p-6 border-t-4 border-green-500">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Top 5 - Período 2</h3>
-            <div class="space-y-3">
-                @foreach($period2['top_expenses'] as $expense)
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900">{{ $expense->description }}</p>
-                            <p class="text-xs text-gray-500">{{ $expense->category->name }}</p>
+            @if($period2['top_expenses']->isNotEmpty())
+                <div class="space-y-3">
+                    @foreach($period2['top_expenses'] as $expense)
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">{{ $expense->description }}</p>
+                                <p class="text-xs text-gray-500">{{ $expense->category->name }}</p>
+                            </div>
+                            <span class="text-sm font-semibold text-green-600">
+                                R$ {{ number_format($expense->amount, 2, ',', '.') }}
+                            </span>
                         </div>
-                        <span class="text-sm font-semibold text-green-600">
-                            R$ {{ number_format($expense->amount, 2, ',', '.') }}
-                        </span>
-                    </div>
-                @endforeach
-            </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-gray-500 text-center py-4">Nenhuma despesa neste período</p>
+            @endif
         </div>
     </div>
 </div>
@@ -168,12 +176,16 @@
 function comparativeReport() {
     return {
         init() {
-            // Combinar categorias dos dois períodos
-            const categories1 = @json($period1['by_category']->pluck('category_name'));
-            const values1 = @json($period1['by_category']->pluck('total'));
+            // ✅ CORREÇÃO: Pegar dados já formatados
+            const period1Data = @json($period1['by_category']);
+            const period2Data = @json($period2['by_category']);
             
-            const categories2 = @json($period2['by_category']->pluck('category_name'));
-            const values2 = @json($period2['by_category']->pluck('total'));
+            // Extrair categorias e valores
+            const categories1 = period1Data.map(item => item.category_name);
+            const values1 = period1Data.map(item => item.total);
+            
+            const categories2 = period2Data.map(item => item.category_name);
+            const values2 = period2Data.map(item => item.total);
             
             // Unir todas as categorias únicas
             const allCategories = [...new Set([...categories1, ...categories2])];
@@ -217,7 +229,12 @@ function comparativeReport() {
                     },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
                         }
                     }
                 }
