@@ -182,22 +182,41 @@ function annualReport() {
                     },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
                         }
                     }
                 }
             });
 
-            // Gráfico por Categoria
+            // ✅ GRÁFICO POR CATEGORIA CORRIGIDO
             const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            
+            const categoryData = @json($stats['by_category']);
+            
             new Chart(categoryCtx, {
                 type: 'bar',
                 data: {
-                    labels: @json($stats['by_category']->pluck('category_name')),
+                    labels: categoryData.map(c => c.category_name),
                     datasets: [{
                         label: 'Valor (R$)',
-                        data: @json($stats['by_category']->pluck('total')),
-                        backgroundColor: @json($stats['by_category']->pluck('category_color'))
+                        data: categoryData.map(c => c.total),
+                        backgroundColor: [
+                            '#6366f1', // indigo
+                            '#10b981', // green
+                            '#f59e0b', // yellow
+                            '#ef4444', // red
+                            '#8b5cf6', // purple
+                            '#ec4899', // pink
+                            '#14b8a6', // teal
+                            '#f97316', // orange
+                            '#06b6d4', // cyan
+                            '#84cc16', // lime
+                        ]
                     }]
                 },
                 options: {
@@ -209,7 +228,12 @@ function annualReport() {
                     },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR');
+                                }
+                            }
                         }
                     }
                 }
