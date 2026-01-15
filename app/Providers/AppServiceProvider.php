@@ -15,6 +15,9 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Tenant::class => TenantPolicy::class,
+         \App\Models\Lead::class => \App\Policies\LeadPolicy::class,
+        \App\Models\LeadPipeline::class => \App\Policies\LeadPipelinePolicy::class,
+        \App\Models\LeadActivity::class => \App\Policies\LeadActivityPolicy::class
     ];
 
     /**

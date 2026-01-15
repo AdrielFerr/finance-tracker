@@ -2,10 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -13,21 +10,37 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
+        'tenant_id',
         'name',
         'email',
         'password',
-        'avatar',
-        'tenant_id',
         'role',
         'is_active',
+        'avatar',
+        'email_verified_at',
     ];
 
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
@@ -38,47 +51,16 @@ class User extends Authenticatable
     }
 
     /**
-     * RELACIONAMENTOS
+     * Relacionamento com Tenant
+     * IMPORTANTE: Usar Tenant::class ao invés de string 'tenant'
      */
-
-    /**
-     * Tenant do usuário
-     */
-    public function tenant(): BelongsTo
+    public function tenant()
     {
-        return $this->belongsTo(Tenant::class);
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**
-     * Despesas do usuário
-     */
-    public function expenses(): HasMany
-    {
-        return $this->hasMany(Expense::class);
-    }
-
-    /**
-     * Categorias do usuário
-     */
-    public function categories(): HasMany
-    {
-        return $this->hasMany(Category::class);
-    }
-
-    /**
-     * Métodos de pagamento do usuário
-     */
-    public function paymentMethods(): HasMany
-    {
-        return $this->hasMany(PaymentMethod::class);
-    }
-
-    /**
-     * HELPERS
-     */
-
-    /**
-     * Verificar se é Super Admin
+     * Verificar se é super admin
      */
     public function isSuperAdmin(): bool
     {
@@ -86,26 +68,10 @@ class User extends Authenticatable
     }
 
     /**
-     * Verificar se é Tenant Admin
+     * Verificar se é admin
      */
-    public function isTenantAdmin(): bool
+    public function isAdmin(): bool
     {
-        return $this->role === 'tenant_admin';
-    }
-
-    /**
-     * Verificar se é usuário normal
-     */
-    public function isUser(): bool
-    {
-        return $this->role === 'user';
-    }
-
-    /**
-     * Verificar se pode acessar painel admin
-     */
-    public function canAccessAdmin(): bool
-    {
-        return in_array($this->role, ['super_admin', 'tenant_admin']);
+        return in_array($this->role, ['super_admin', 'admin']);
     }
 }
