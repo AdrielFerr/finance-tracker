@@ -16,9 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.tenant' => \App\Http\Middleware\CheckTenantStatus::class,
         ]);
 
-        $middleware->appendToGroup('web', [
-            \App\Http\Middleware\CheckTenantStatus::class,
-        ]);
+        // $middleware->appendToGroup('web', [
+        //     \App\Http\Middleware\CheckTenantStatus::class,
+        // ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
