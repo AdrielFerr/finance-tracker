@@ -11,7 +11,9 @@ RUN apk add --no-cache \
     unzip \
     nginx \
     supervisor \
-    postgresql-dev
+    postgresql-dev \
+    nodejs \
+    npm
 
 # Instalar extensões PHP
 RUN docker-php-ext-install pdo pdo_pgsql pdo_mysql mbstring exif pcntl bcmath gd
@@ -32,6 +34,9 @@ COPY . .
 
 # Instalar dependências do Composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Instalar dependências do NPM e buildar assets
+RUN npm install && npm run build && rm -rf node_modules
 
 # Configurar permissões e criar diretórios necessários
 RUN mkdir -p /var/log/supervisor \
