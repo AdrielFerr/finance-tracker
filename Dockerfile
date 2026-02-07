@@ -28,8 +28,9 @@ COPY . .
 # Instalar dependências do Composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Configurar permissões
-RUN chown -R www-data:www-data /var/www \
+# Configurar permissões e criar diretórios necessários
+RUN mkdir -p /var/log/supervisor \
+    && chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www/storage
 
 # Copiar configuração do Nginx
