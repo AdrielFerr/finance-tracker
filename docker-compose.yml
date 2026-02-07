@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  finance-tracker:
+    image: adrielferr/finance-tracker:latest
+    networks:
+      - traefik-public
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_DATABASE=finance_tracker
+      - DB_USERNAME=finance_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.finance-tracker.rule=Host(`finance.seudominio.com`)
+        - traefik.http.routers.finance-tracker.entrypoints=websecure
+        - traefik.http.routers.finance-tracker.tls.certresolver=letsencrypt
+        - traefik.http.services.finance-tracker.loadbalancer.server.port=80
+
+networks:
+  traefik-public:
+    external: true
