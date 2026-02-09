@@ -42,17 +42,19 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'tenant_id' => ['required', 'exists:tenants,id'],
+            'tenant_id' => ['nullable', 'exists:tenants,id'],
             'role' => ['required', Rule::in(['tenant_admin', 'user'])],
             'is_active' => ['boolean'],
         ]);
 
         // Verificar limite de usuários do tenant
-        $tenant = Tenant::findOrFail($validated['tenant_id']);
-        if ($tenant->users()->count() >= $tenant->max_users) {
-            return back()->withErrors([
-                'tenant_id' => "Limite de usuários atingido para este tenant ({$tenant->max_users} usuários)."
-            ])->withInput();
+        if (!empty($validated['tenant_id'])) {
+            $tenant = Tenant::findOrFail($validated['tenant_id']);
+            if ($tenant->users()->count() >= $tenant->max_users) {
+                return back()->withErrors([
+                    'tenant_id' => "Limite de usuários atingido para este tenant ({$tenant->max_users} usuários)."
+                ])->withInput();
+            }
         }
 
         $validated['password'] = Hash::make($validated['password']);
