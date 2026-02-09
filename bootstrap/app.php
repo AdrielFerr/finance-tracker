@@ -11,6 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Confia em todos os proxies (Traefik)
+        $middleware->trustProxies(at: '*');
+        
         $middleware->alias([
             'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
             'check.tenant' => \App\Http\Middleware\CheckTenantStatus::class,
