@@ -66,13 +66,13 @@
                             @error('email')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
 
-                        <!-- Tenant -->
+                        <!-- Tenant (OPCIONAL) -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Empresa <span class="text-red-500">*</span>
+                                Empresa <span class="text-gray-400 text-xs">(opcional)</span>
                             </label>
-                            <select name="tenant_id" required class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">Selecione...</option>
+                            <select name="tenant_id" class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">Nenhuma</option>
                                 @foreach($tenants as $tenant)
                                     <option value="{{ $tenant->id }}" {{ old('tenant_id') == $tenant->id ? 'selected' : '' }}>
                                         {{ $tenant->name }}
