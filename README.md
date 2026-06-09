@@ -7,6 +7,7 @@ Sistema de gestão financeira **multi-tenant** desenvolvido em Laravel, com isol
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1.svg?style=flat&logo=mysql&logoColor=white)
 ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-%2338B2AC.svg?style=flat&logo=tailwind-css&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)
+![Docker Hub](https://img.shields.io/badge/Docker_Hub-adrielferreira%2Ffinance--tracker-%232496ED.svg?style=flat&logo=docker&logoColor=white)
 
 ## ✨ Funcionalidades
 
@@ -36,17 +37,23 @@ Sistema de gestão financeira **multi-tenant** desenvolvido em Laravel, com isol
 
 ### Opção 1: com Docker (recomendado)
 
+A imagem já está publicada no Docker Hub:
+
+```bash
+docker pull adrielferreira/finance-tracker:latest
+```
+
+Para subir o projeto completo com o banco:
+
 ```bash
 git clone https://github.com/AdrielFerr/finance-tracker.git
 cd finance-tracker
 
 cp .env.example .env
-docker compose up -d --build
+docker compose up -d
 
-docker compose exec app composer install
 docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate --seed
-docker compose exec app npm install && docker compose exec app npm run build
 ```
 
 A aplicação ficará disponível em `http://localhost` (ajuste a porta conforme o seu `docker-compose.yml`).
@@ -90,6 +97,10 @@ DB_PASSWORD=
 ```bash
 php artisan test
 ```
+
+## 🔗 Links
+
+- **Docker Hub:** https://hub.docker.com/r/adrielferreira/finance-tracker
 
 ## 👨‍💻 Autor
 
