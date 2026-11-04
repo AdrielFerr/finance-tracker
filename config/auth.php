@@ -18,6 +18,10 @@ return [
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
+    'registration' => [
+        'enabled' => env('AUTH_REGISTRATION_ENABLED', true),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Guards
