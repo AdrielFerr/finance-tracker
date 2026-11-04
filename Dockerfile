@@ -1,4 +1,9 @@
-FROM php:8.2-fpm-alpine
+# PHP 8.2.35 corrige CVE-2026-109618 e CVE-2026-109619 (RCE crítico, CVSS 9.2)
+# Atenção: PHP 8.2 chega ao EOL em 31/12/2026 — planejar upgrade para 8.3+
+FROM php:8.2.35-fpm-alpine
+
+# Aplicar patches de segurança do Alpine
+RUN apk update && apk upgrade --no-cache
 
 # Instalar dependências do sistema
 RUN apk add --no-cache \
