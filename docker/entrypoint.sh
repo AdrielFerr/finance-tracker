@@ -18,10 +18,10 @@ done
 echo "[entrypoint] Rodando migrations..."
 php artisan migrate --force
 
-echo "[entrypoint] Cacheando config, routes e views..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+echo "[entrypoint] Cacheando config, routes e views (nao-fatal)..."
+php artisan config:cache || echo "[entrypoint] config:cache falhou, seguindo sem cache."
+php artisan route:cache || echo "[entrypoint] route:cache falhou, seguindo sem cache."
+php artisan view:cache || echo "[entrypoint] view:cache falhou, seguindo sem cache."
 
 echo "[entrypoint] Iniciando supervisord..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
