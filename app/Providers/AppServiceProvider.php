@@ -2,30 +2,19 @@
 
 namespace App\Providers;
 
-use App\Models\Tenant;
-use App\Policies\TenantPolicy;
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 
-class AuthServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * The model to policy mappings for the application.
-     *
-     * @var array<class-string, class-string>
-     */
-    protected $policies = [
-        Tenant::class => TenantPolicy::class,
-         \App\Models\Lead::class => \App\Policies\LeadPolicy::class,
-        \App\Models\LeadPipeline::class => \App\Policies\LeadPipelinePolicy::class,
-        \App\Models\LeadActivity::class => \App\Policies\LeadActivityPolicy::class
-    ];
+    public function register(): void
+    {
+        //
+    }
 
-    /**
-     * Register any authentication / authorization services.
-     */
     public function boot(): void
     {
-         if ($this->app->environment('production')) {
+        if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
     }
