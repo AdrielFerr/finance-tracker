@@ -34,20 +34,4 @@ trait HasRoles
     {
         return $this->role === $role;
     }
-
-    /**
-     * Verificar se o usuário tem permissão para gerenciar leads
-     */
-    public function canManageLeads(): bool
-    {
-        return in_array($this->role, ['admin', 'manager', 'sales']);
-    }
-
-    /**
-     * Verificar se o usuário pode ver todos os leads do tenant
-     */
-    public function canViewAllLeads(): bool
-    {
-        return in_array($this->role, ['admin', 'manager']);
-    }
 }
