@@ -3,13 +3,16 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PaymentMethodController;
+use App\Http\Controllers\StatementImportController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\SystemConfigController;
+use App\Http\Controllers\Admin\WhatsAppConfigController;
 use App\Models\User;
 
 Route::get('/', function () {
@@ -22,9 +25,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/data', [DashboardController::class, 'getData'])->name('dashboard.data');
     Route::post('/dashboard/update-overdue', [DashboardController::class, 'updateOverdue'])->name('dashboard.update-overdue');
 
+    // Notificacoes internas
+    Route::get("notifications/{notification}", [NotificationController::class, "open"])->name("notifications.open");
+    Route::post("notifications/read-all", [NotificationController::class, "markAllAsRead"])->name("notifications.read-all");
+
     // Expenses (Despesas)
     Route::delete('expenses/bulk-delete', [ExpenseController::class, 'bulkDelete'])->name('expenses.bulk-delete'); // ← ANTES!
-    Route::resource('expenses', ExpenseController::class);
+    Route::post("expenses/import", [StatementImportController::class, "store"])->name("expenses.import.store");
+    Route::get("expenses/import/{import}", [StatementImportController::class, "show"])->name("expenses.import.show");
+    Route::post("expenses/import/{import}/confirm", [StatementImportController::class, "confirm"])->name("expenses.import.confirm");
+    Route::delete("expenses/import/{import}", [StatementImportController::class, "destroy"])->name("expenses.import.destroy");
+    Route::resource("expenses", ExpenseController::class);
     Route::post('expenses/{expense}/mark-paid', [ExpenseController::class, 'markAsPaid'])->name('expenses.mark-paid');
     Route::post('expenses/{expense}/duplicate', [ExpenseController::class, 'duplicate'])->name('expenses.duplicate');
     Route::get('expenses/{expense}/download-receipt', [ExpenseController::class, 'downloadReceipt'])->name('expenses.download-receipt');
@@ -51,6 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+    Route::put('/profile/notifications', [ProfileController::class, 'updateNotifications'])->name('profile.update-notifications');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.update-avatar');
     Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.remove-avatar');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -88,6 +100,12 @@ Route::middleware(['auth', 'verified', 'super_admin'])
             ->name('system-config.index');
         Route::put('/system-config', [SystemConfigController::class, 'update'])
             ->name('system-config.update');
+        Route::put('/system-config/whatsapp', [WhatsAppConfigController::class, 'update'])
+            ->name('system-config.whatsapp.update');
+        Route::delete('/system-config/whatsapp/key', [WhatsAppConfigController::class, 'forgetKey'])
+            ->name('system-config.whatsapp.forget-key');
+        Route::post('/system-config/whatsapp/test', [WhatsAppConfigController::class, 'test'])
+            ->name('system-config.whatsapp.test');
 });
 
 require __DIR__ . '/auth.php';
