@@ -25,6 +25,13 @@ class User extends Authenticatable
         'is_active',
         'avatar',
         'email_verified_at',
+        'notify_by_email',
+        'notify_by_whatsapp',
+        'notify_in_app',
+        'whatsapp_number',
+        'notify_days_before',
+        'notify_on_due_date',
+        'notify_when_overdue',
     ];
 
     /**
@@ -48,6 +55,12 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'notify_by_email' => 'boolean',
+            'notify_by_whatsapp' => 'boolean',
+            'notify_in_app' => 'boolean',
+            'notify_on_due_date' => 'boolean',
+            'notify_when_overdue' => 'boolean',
+            'notify_days_before' => 'integer',
         ];
     }
 

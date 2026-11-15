@@ -113,6 +113,11 @@
                                 class="flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm">
                             Segurança
                         </button>
+                        <button @click="activeTab = 'notifications'"
+                                :class="activeTab === 'notifications' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm">
+                            Avisos
+                        </button>
                         <button @click="activeTab = 'danger'"
                                 :class="activeTab === 'danger' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                                 class="flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm">
@@ -211,6 +216,11 @@
                         </form>
                     </div>
 
+                    <!-- Tab: Avisos -->
+                    <div x-show="activeTab === 'notifications'" x-cloak>
+                        @include('profile.partials.notification-preferences-form')
+                    </div>
+
                     <!-- Tab: Zona Perigosa -->
                     <div x-show="activeTab === 'danger'" x-cloak>
                         <h3 class="text-lg font-medium text-red-900 mb-2">Zona Perigosa</h3>
@@ -292,7 +302,7 @@
 <script>
 function profileManager() {
     return {
-        activeTab: 'info',
+        activeTab: '{{ session('status') === 'notification-preferences-updated' || $errors->hasAny(['notify_days_before', 'whatsapp_number']) ? 'notifications' : 'info' }}',
         showDeleteModal: false
     }
 }
