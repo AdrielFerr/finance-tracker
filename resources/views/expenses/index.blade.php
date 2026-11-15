@@ -34,13 +34,28 @@
             </div>
 
             <div class="relative group">
-                <a href="{{ route('expenses.create') }}" class="inline-flex items-center px-3 sm:px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                <button type="button" @click="$dispatch('abrir-importacao')"
+                        class="inline-flex items-center px-3 sm:px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+                    </svg>
+                    <span class="hidden sm:inline">Importar extrato</span>
+                </button>
+                <!-- Tooltip Mobile -->
+                <div class="sm:hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                    Importar extrato
+                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                </div>
+            </div>
+
+            <div class="relative group">
+                <button type="button" @click="$dispatch('abrir-nova-despesa')" class="inline-flex items-center px-3 sm:px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                     <span class="hidden sm:inline">Nova Despesa</span>
                     <span class="sm:hidden">+</span>
-                </a>
+                </button>
                 <!-- Tooltip Mobile -->
                 <div class="sm:hidden absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
                     Nova Despesa
@@ -271,9 +286,9 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                             </svg>
                             <p class="mt-2">Nenhuma despesa encontrada</p>
-                            <a href="{{ route('expenses.create') }}" class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-500">
+                            <button type="button" @click="$dispatch('abrir-nova-despesa')" class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-500">
                                 Criar sua primeira despesa
-                            </a>
+                            </button>
                         </td>
                     </tr>
                 @endforelse
@@ -295,6 +310,79 @@
         <input type="hidden" name="ids" id="selectedIds">
     </form>
 </div>
+
+<div x-data="{ open: {{ $errors->hasAny(['statement', 'payment_method_id']) ? 'true' : 'false' }} }"
+     @abrir-importacao.window="open = true"
+     x-show="open"
+     x-cloak
+     class="relative z-50">
+
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="open = false"></div>
+
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div class="relative w-full max-w-lg bg-white rounded-lg shadow-xl" @click.stop>
+                <form method="POST" action="{{ route('expenses.import.store') }}" enctype="multipart/form-data">
+                    @csrf
+
+                    <div class="px-6 py-4 border-b border-gray-200 flex items-start justify-between">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900">Importar extrato ou fatura</h3>
+                            <p class="mt-1 text-sm text-gray-500">
+                                Você confere tudo antes de qualquer coisa ser lançada.
+                            </p>
+                        </div>
+                        <button type="button" @click="open = false" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="px-6 py-4 space-y-4">
+                        <div>
+                            <label for="import_payment_method_id" class="block text-sm font-medium text-gray-700">
+                                Forma de pagamento
+                            </label>
+                            <select name="payment_method_id" id="import_payment_method_id"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                <option value="">Não informar agora</option>
+                                @foreach($paymentMethods as $method)
+                                    <option value="{{ $method->id }}">{{ $method->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="statement" class="block text-sm font-medium text-gray-700">Arquivo</label>
+                            <input type="file" name="statement" id="statement" accept=".ofx,.csv,.txt" required
+                                   class="mt-1 block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                            <p class="mt-2 text-sm text-gray-500">
+                                OFX ou CSV, exportado no app do banco. Nubank, Inter, PicPay e Bradesco.
+                            </p>
+                            @error('statement')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+                        <button type="button" @click="open = false"
+                                class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50">
+                            Cancelar
+                        </button>
+                        <button type="submit"
+                                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                            Ler arquivo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@include('expenses.partials.create-modal')
 
 <style>
 [x-cloak] { display: none !important; }
