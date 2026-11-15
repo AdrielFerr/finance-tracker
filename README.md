@@ -92,6 +92,33 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
+## ⏰ Avisos de vencimento
+
+Os avisos de despesa a vencer saem de um comando agendado para as 8h:
+
+```bash
+php artisan expenses:notify-due
+```
+
+Para ele disparar sozinho, algo precisa chamar o agendador do Laravel de minuto em minuto:
+
+- **Docker (produção)**: já resolvido — o `supervisord` sobe um processo `schedule:work` junto com o nginx e o php-fpm.
+- **Windows (local)**: tarefa no Agendador de Tarefas apontando para `windows/schedule-hidden.vbs`, repetindo a cada minuto.
+- **Linux sem Docker**: uma linha no cron.
+  ```
+  * * * * * cd /caminho/do/projeto && php artisan schedule:run >> /dev/null 2>&1
+  ```
+
+O agendamento usa `onOneServer()`, então com mais de uma réplica apenas uma executa e ninguém recebe aviso repetido. Isso depende de um cache compartilhado entre as réplicas — `CACHE_STORE=database` ou `redis`, nunca `file`.
+
+Canais de envio:
+
+- **E-mail**: precisa de `MAIL_MAILER=smtp`. Com `log`, a mensagem só vai para `storage/logs`.
+- **WhatsApp**: configurado em Administração → Configurações (servidor WAHA, sessão e chave). Para conferir a conexão e enviar uma mensagem de teste:
+  ```bash
+  php artisan whatsapp:test 5511999999999
+  ```
+
 ## 🧪 Testes
 
 ```bash

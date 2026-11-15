@@ -72,6 +72,11 @@ class Expense extends Model
         });
     }
 
+    public function notifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ExpenseNotification::class);
+    }
+
     /**
      * Relacionamento com User
      */

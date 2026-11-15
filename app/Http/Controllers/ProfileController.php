@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\UpdateNotificationPreferencesRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,13 @@ class ProfileController extends Controller
             'user' => $user,
             'stats' => $stats,
         ]);
+    }
+
+    public function updateNotifications(UpdateNotificationPreferencesRequest $request): RedirectResponse
+    {
+        $request->user()->update($request->validated());
+
+        return back()->with('status', 'notification-preferences-updated');
     }
 
     /**

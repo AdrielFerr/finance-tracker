@@ -7,10 +7,13 @@ use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use App\Services\WhatsApp\WahaSettings;
 use Illuminate\Support\Facades\Storage;
 
 class SystemConfigController extends Controller
 {
+    public function __construct(private WahaSettings $wahaSettings) {}
+
     /**
      * Display the system configuration page.
      */
@@ -24,8 +27,15 @@ class SystemConfigController extends Controller
             'primary_color' => SystemSetting::get('primary_color', '#4F46E5'),
             'logo_display_mode' => SystemSetting::get('logo_display_mode', 'logo_only'), // NOVO
         ];
-        
-        return view('admin.system-config.index', compact('settings'));
+
+        $whatsapp = [
+            'url' => $this->wahaSettings->url(),
+            'session' => $this->wahaSettings->session(),
+            'has_key' => $this->wahaSettings->hasApiKey(),
+            'key_unreadable' => $this->wahaSettings->storedApiKeyIsUnreadable(),
+        ];
+
+        return view('admin.system-config.index', compact('settings', 'whatsapp'));
     }
 
     /**

@@ -111,7 +111,7 @@ $logoDisplayMode = setting('logo_display_mode', 'logo_only');
                 <div class="text-xs font-semibold leading-6 text-white opacity-75">Ações Rápidas</div>
                 <ul role="list" class="-mx-2 mt-2 space-y-1">
                     <li>
-                        <a href="{{ route('expenses.create') }}" 
+                        <a href="{{ route('expenses.index', ['nova' => 1]) }}" 
                            class="text-indigo-200 hover:text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold hover:bg-white hover:bg-opacity-10">
                             <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
